@@ -48,33 +48,52 @@ mcp = FastMCP("uyap-udf")
 # Markdown benzeri parser
 # ----------------------------------------------------------------------------
 
+# İç içe biçim (16.11.2026): italik içinde **kalın** ve kalın içinde *italik* çözülür; örn. içtihat
+# alıntısında *"...metin **vurgu** metin..."* → vurgu kalın-italik olur. "bn" ve "in" iç içe hâlleri
+# yakalar; eşleşmezlerse eski düz kalıplar ("b", "i") aynen çalışır, eski çıktılar değişmez.
 INLINE_PATTERN = re.compile(
-    r"(\*\*\*(.+?)\*\*\*)|(\*\*(.+?)\*\*)|(__(.+?)__)|(\*(.+?)\*)|(_(.+?)_)",
+    r"\*\*\*(?P<bi>.+?)\*\*\*"                              # ***kalın italik***
+    r"|\*\*(?P<bn>(?:\*[^*]+?\*|[^*])+?)\*\*"               # **kalın, içinde *italik* olabilir**
+    r"|\*\*(?P<b>.+?)\*\*"                                  # **kalın** (eski düz kalıp)
+    r"|__(?P<u>.+?)__"                                      # __altı çizili__
+    r"|\*(?!\*)(?P<in>(?:\*\*[^*]+?\*\*|[^*])+?)\*(?!\*)"   # *italik, içinde **kalın** olabilir*
+    r"|\*(?P<i>.+?)\*"                                      # *italik* (eski düz kalıp)
+    r"|_(?P<iu>.+?)_",                                      # _italik_
     re.DOTALL,
 )
 
 
-def _parse_inline(text: str) -> list[Run]:
+def _parse_inline(text: str, bold: bool = False, italic: bool = False,
+                  underline: bool = False) -> list[Run]:
+    """Satır içi biçimleri Run listesine çevirir; dıştaki biçim içteki parçalara aktarılır."""
+    def run(t: str, b: bool = bold, i: bool = italic, u: bool = underline) -> Run:
+        return Run(text=t, bold=b, italic=i, underline=u)
+
     runs: list[Run] = []
     pos = 0
     for m in INLINE_PATTERN.finditer(text):
         if m.start() > pos:
-            runs.append(Run(text=text[pos : m.start()]))
-        if m.group(1):
-            runs.append(Run(text=m.group(2), bold=True, italic=True))
-        elif m.group(3):
-            runs.append(Run(text=m.group(4), bold=True))
-        elif m.group(5):
-            runs.append(Run(text=m.group(6), underline=True))
-        elif m.group(7):
-            runs.append(Run(text=m.group(8), italic=True))
-        elif m.group(9):
-            runs.append(Run(text=m.group(10), italic=True))
+            runs.append(run(text[pos : m.start()]))
+        g = m.groupdict()
+        if g["bi"] is not None:
+            runs.append(run(g["bi"], True, True))
+        elif g["bn"] is not None:
+            runs.extend(_parse_inline(g["bn"], True, italic, underline))
+        elif g["b"] is not None:
+            runs.append(run(g["b"], True, italic))
+        elif g["u"] is not None:
+            runs.extend(_parse_inline(g["u"], bold, italic, True))
+        elif g["in"] is not None:
+            runs.extend(_parse_inline(g["in"], bold, True, underline))
+        elif g["i"] is not None:
+            runs.append(run(g["i"], bold, True))
+        else:
+            runs.append(run(g["iu"], bold, True))
         pos = m.end()
     if pos < len(text):
-        runs.append(Run(text=text[pos:]))
+        runs.append(run(text[pos:]))
     if not runs:
-        runs.append(Run(text=text))
+        runs.append(run(text))
     return runs
 
 
@@ -414,6 +433,8 @@ def create_udf_from_markdown(
 
     Her satır bir paragraftır. Boş satırlar yok sayılır; boşluk gerekiyorsa <br> yazın.
     Satır içi: **kalın**, *italik*, ***kalın italik***, __altı çizili__. Künyede hizalama için TAB (\\t).
+    İç içe yazılabilir: italik alıntının içindeki **vurgu** kalın-italik olur
+    (>>> *"...karar metni **vurgulanan kısım** karar metni..."*); **kalın içinde *italik*** de çalışır.
     İlk bölüm başlığından önceki "ETİKET\\t\\t: değer" ve "\\t\\t  değer" satırlarına asılı girinti
     verilir: değer alt satıra taşarsa sol kenardan değil, iki nokta sütununun hizasından devam eder.
 
