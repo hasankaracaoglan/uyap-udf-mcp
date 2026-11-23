@@ -64,8 +64,9 @@ kipinde dosyalar diske yazılmaz, base64 olarak döner.
 ### PDF dönüştürme için ek gereksinimler
 
 - **macOS** üzerinde `/Applications` altında kurulu **UYAP Doküman Editörü**.
-- `PATH` üzerinde **Java 8** ile gelen `jjs` (Nashorn). Dönüştürücü betiği
-  (`uyap_native_converter.js`) editörün kendi jar dosyaları üzerinde `jjs` ile çalışır.
+- Dönüştürücü betiği (`uyap_native_converter.js`) editörün kendi jar dosyaları üzerinde Java 8'in `jjs`
+  aracıyla çalışır. Sistemde çalışan bir Java 8 varsa o, yoksa editörün içindeki gömülü Java 8
+  (`zulu-8.jre`) kullanılır; ayrıca Java kurmak gerekmez.
 
 Windows ve Linux'ta PDF dönüştürme şimdilik desteklenmiyor: editörün kurulum klasörü yalnızca
 macOS'ta aranıyor.

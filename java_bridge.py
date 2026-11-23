@@ -16,8 +16,8 @@ class NativeConversionError(RuntimeError):
     """The official UYAP engine could not convert a document."""
 
 
-def get_uyap_classpath() -> str:
-    """Finds UYAP classpath containing all editor jars, supporting macOS Unicode variants."""
+def get_uyap_app() -> str:
+    """Returns the Uyap Doküman Editörü.app path under /Applications (any Unicode form), or ""."""
     possible_apps = [
         "/Applications/Uyap Doküman Editörü.app",
         "/Applications/Uyap Doküman Editörü.app",
@@ -40,6 +40,12 @@ def get_uyap_classpath() -> str:
         except Exception:
             pass
 
+    return uyap_app or ""
+
+
+def get_uyap_classpath() -> str:
+    """Finds UYAP classpath containing all editor jars."""
+    uyap_app = get_uyap_app()
     if uyap_app:
         single_jar = os.path.join(uyap_app, "Contents", "Java", "editor-app.jar")
         if os.path.exists(single_jar):
@@ -72,18 +78,43 @@ def _find_converter_js() -> str:
 CONVERTER_JS = _find_converter_js()
 
 
+def _system_java8() -> bool:
+    """macOS'taki /usr/bin/jjs yalnızca Apple'ın yönlendiricisidir; Java 8 kurulu değilse çalışmaz."""
+    try:
+        return subprocess.run(["/usr/libexec/java_home", "-v", "1.8"], capture_output=True, timeout=10).returncode == 0
+    except Exception:
+        return False
+
+
+def find_jjs() -> str:
+    """jjs: PATH'teki çalışan Java 8, yoksa Uyap Doküman Editörü'nün içindeki gömülü Java 8 (zulu-8.jre)."""
+    system = shutil.which("jjs")
+    if system and (os.path.realpath(system) != "/usr/bin/jjs" or _system_java8()):
+        return system
+    uyap_app = get_uyap_app()
+    if uyap_app:
+        plugins = os.path.join(uyap_app, "Contents", "PlugIns")
+        try:
+            for entry in sorted(os.listdir(plugins)):
+                bundled = os.path.join(plugins, entry, "Contents", "Home", "bin", "jjs")
+                if os.access(bundled, os.X_OK):
+                    return bundled
+        except OSError:
+            pass
+    return ""
+
+
 def is_native_uyap_available() -> bool:
-    """Checks if macOS has jjs (Java Scripting) and UYAP Doküman Editörü installed."""
-    jjs_cmd = shutil.which("jjs")
-    if not jjs_cmd:
+    """Checks that jjs (Java 8 Nashorn) and Uyap Doküman Editörü are available."""
+    if not find_jjs():
         return False
     cp = get_uyap_classpath()
     return bool(cp) and os.path.exists(CONVERTER_JS)
 
 
 def unavailable_reason() -> str:
-    if not shutil.which("jjs"):
-        return "jjs (Java 8) bulunamadı."
+    if not find_jjs():
+        return "jjs (Java 8) bulunamadı: ne sistemde ne de Uyap Doküman Editörü'nün içinde."
     if not get_uyap_classpath():
         return "UYAP Doküman Editörü /Applications altında bulunamadı."
     if not os.path.exists(CONVERTER_JS):
@@ -107,7 +138,7 @@ def convert_pairs(pairs: list[tuple[str, str]]) -> dict[str, str | None]:
     if reason:
         return {pdf: f"Resmi UYAP motoru kullanılamıyor: {reason}" for _, pdf in pairs}
 
-    cmd = ["jjs", "-J-Djava.awt.headless=true", "-J-Dfile.encoding=UTF-8",
+    cmd = [find_jjs(), "-J-Djava.awt.headless=true", "-J-Dfile.encoding=UTF-8",
            "-cp", get_uyap_classpath(), CONVERTER_JS, "--"]
     for udf_path, pdf_path in pairs:
         cmd += [udf_path, pdf_path]
