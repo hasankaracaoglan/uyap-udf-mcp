@@ -31,7 +31,23 @@ hata döner.
 
 ## Kurulum
 
-Python 3.10 veya üstü gerekir.
+Python 3.10 veya üstü ve [uv](https://docs.astral.sh/uv/) gerekir. En kolay yol, MCP istemcisinin
+sunucuyu doğrudan GitHub'dan çalıştırmasıdır (Claude Desktop'ta `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "uyap-udf-mcp": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/hasankaracaoglan/uyap-udf-mcp", "uyap-udf-mcp"]
+    }
+  }
+}
+```
+
+Claude Desktop `uvx`'i bulamazsa `command` alanına tam yolunu yazın (Terminal'de `which uvx`, çoğunlukla `/Users/<kullanıcı>/.local/bin/uvx`).
+
+Kaynaktan kurmak için:
 
 ```bash
 git clone https://github.com/hasankaracaoglan/uyap-udf-mcp.git
@@ -40,17 +56,7 @@ python3 -m venv .venv
 .venv/bin/pip install -e .
 ```
 
-MCP istemcisi ayarı (Claude Desktop, Claude Code vb.):
-
-```json
-{
-  "mcpServers": {
-    "uyap-udf-mcp": {
-      "command": "/tam/yol/uyap-udf-mcp/.venv/bin/uyap-udf-mcp"
-    }
-  }
-}
-```
+Bu durumda komut `/tam/yol/uyap-udf-mcp/.venv/bin/uyap-udf-mcp` olur.
 
 HTTP olarak çalıştırmak için `python server.py --http` kullanılır (`PORT`, varsayılan 8000). HTTP
 kipinde dosyalar diske yazılmaz, base64 olarak döner.

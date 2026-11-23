@@ -8,6 +8,7 @@ convert_via_native_uyap and convert_batch_via_native_uyap compatible.
 import os
 import shutil
 import subprocess
+import sys
 import unicodedata
 
 
@@ -54,7 +55,21 @@ def get_uyap_classpath() -> str:
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-CONVERTER_JS = os.path.join(SCRIPT_DIR, "uyap_native_converter.js")
+
+
+def _find_converter_js() -> str:
+    """Kaynak klasörde (git clone) ya da paket kurulumunda <ortam>/share/uyap-udf-mcp altında arar."""
+    candidates = [
+        os.path.join(SCRIPT_DIR, "uyap_native_converter.js"),
+        os.path.join(sys.prefix, "share", "uyap-udf-mcp", "uyap_native_converter.js"),
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return candidates[0]
+
+
+CONVERTER_JS = _find_converter_js()
 
 
 def is_native_uyap_available() -> bool:

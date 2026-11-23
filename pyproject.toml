@@ -21,3 +21,5 @@ uyap-udf-mcp = "server:main"
 
 [tool.setuptools]
 py-modules = ["server", "java_bridge", "pdf_converter", "udf"]
+# Dönüştürücü betiği kurulumda <ortam>/share/uyap-udf-mcp altına konur (java_bridge orada da arar).
+data-files = {"share/uyap-udf-mcp" = ["uyap_native_converter.js"]}
