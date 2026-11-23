@@ -29,7 +29,37 @@ PDF dönüştürme bilgisayarda kurulu UYAP Doküman Editörü'nün kendi PDF mo
 mizanpaj UYAP'taki görünümle birebir aynıdır. Resmi motor çalışmazsa başka bir motora geçilmez,
 hata döner.
 
-## Kurulum
+## Yapay zekâ asistanıyla kurulum
+
+Terminal kullanabilen bir yapay zekâ asistanına (Claude Code, Antigravity vb.) bu sayfanın bağlantısını
+verip “bunu kur” demeniz yeterlidir. Asistan aşağıdaki adımları izler; komut çalıştırmadan önce izin ister.
+
+**Asistan için adımlar:**
+
+1. `uv` kurulu değilse kur. macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
+   Windows: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`.
+   Sonra `uvx`'in tam yolunu bul (`command -v uvx`; çoğunlukla `~/.local/bin/uvx`). Masaüstü uygulamaları
+   `~/.local/bin`'i PATH'te görmediği için ayarlarda daima bu tam yolu kullan.
+2. Sunucuyu kullanıcının kullandığı asistana ekle. Çalıştırılacak komut:
+   `<uvx tam yolu> --from git+https://github.com/hasankaracaoglan/uyap-udf-mcp uyap-udf-mcp`
+   - **Claude Code:** `claude mcp add uyap-udf-mcp -s user -- <uvx tam yolu> --from git+https://github.com/hasankaracaoglan/uyap-udf-mcp uyap-udf-mcp`
+   - **Claude Desktop:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+     (Windows: `%APPDATA%\Claude\claude_desktop_config.json`). Dosya yoksa oluştur.
+   - **Antigravity:** `~/.gemini/config/mcp_config.json` ya da `~/.gemini/antigravity/mcp_config.json`
+     (hangisi varsa).
+   - JSON dosyalarında önce dosyanın yedeğini al, sonra `mcpServers` nesnesine şu girdiyi ekle; var olan
+     sunuculara dokunma ve dosyanın geçerli JSON kaldığını doğrula:
+     `"uyap-udf-mcp": {"command": "<uvx tam yolu>", "args": ["--from", "git+https://github.com/hasankaracaoglan/uyap-udf-mcp", "uyap-udf-mcp"]}`
+3. Ortamı önceden kurup denemek için şunu çalıştır; bağımlılıkları indirir (bir iki dakika sürebilir) ve
+   `ok` yazıp çıkar. Sunucunun kendisini terminalde çalıştırma, girdi bekleyip açık kalır:
+   `<uvx tam yolu> --from git+https://github.com/hasankaracaoglan/uyap-udf-mcp python -c "print('ok')"`
+4. Kullanıcıya asistan uygulamasını tamamen kapatıp yeniden açmasını söyle.
+5. PDF dönüştürme için Uyap Doküman Editörü'nün macOS'ta `/Applications` altında kurulu olması gerekir;
+   ayrıca Java kurmak gerekmez. UDF üretme ve okuma için gerekmez.
+
+Sunucu her açılışta GitHub'daki son sürümü kullanır; güncelleme için ayrıca bir şey yapmak gerekmez.
+
+## Elle kurulum
 
 Python 3.10 veya üstü ve [uv](https://docs.astral.sh/uv/) gerekir. En kolay yol, MCP istemcisinin
 sunucuyu doğrudan GitHub'dan çalıştırmasıdır (Claude Desktop'ta `claude_desktop_config.json`):
