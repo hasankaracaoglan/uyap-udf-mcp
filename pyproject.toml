@@ -5,15 +5,19 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "uyap-udf-mcp"
 version = "1.0.0"
-description = "UYAP UDF Document & PDF Converter MCP Server"
+description = "UYAP Doküman Editörü (.udf) dilekçe üretme, okuma ve resmi motorla PDF'e çevirme MCP sunucusu"
+readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
     "fastmcp>=2.10.0",
-    "reportlab>=4.0.0",
-    "pillow>=10.0.0",
-    "qrcode>=7.0",
-    "pypdf>=5.0.0",
 ]
+
+[project.urls]
+Upstream = "https://github.com/johanfaberrr/uyap-udf-mcp"
+
+[project.scripts]
+uyap-udf-mcp = "server:main"
 
 [tool.setuptools]
 py-modules = ["server", "java_bridge", "pdf_converter", "udf"]
