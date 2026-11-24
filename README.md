@@ -36,9 +36,12 @@ verip “bunu kur” demeniz yeterlidir. Asistan aşağıdaki adımları izler; 
 
 **Asistan için adımlar:**
 
-1. `uv` kurulu değilse kur. macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
-   Windows: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`.
-   Sonra `uvx`'in tam yolunu bul (`command -v uvx`; çoğunlukla `~/.local/bin/uvx`). Masaüstü uygulamaları
+Bu sunucuyu dilekçe becerileriyle birlikte kuruyorsan [AvukatLab paketinin kurulum talimatını](https://github.com/hasankaracaoglan/avukatlab-yapay-zeka/blob/main/KURULUM.md) izle; üç sunucuyu ve becerileri birlikte kurar.
+
+1. Önce `uvx` zaten var mı bak: `command -v uvx` boş dönerse `~/.local/bin/uvx`, `/opt/homebrew/bin/uvx` ve
+   `/usr/local/bin/uvx` yollarını da dene. Yalnızca hiçbirinde yoksa `uv`'yi kur. macOS/Linux:
+   `curl -LsSf https://astral.sh/uv/install.sh | sh`. Windows:
+   `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`. Masaüstü uygulamaları
    `~/.local/bin`'i PATH'te görmediği için ayarlarda daima bu tam yolu kullan.
 2. Sunucuyu kullanıcının kullandığı asistana ekle. Çalıştırılacak komut:
    `<uvx tam yolu> --from git+https://github.com/hasankaracaoglan/uyap-udf-mcp uyap-udf-mcp`
@@ -48,9 +51,11 @@ verip “bunu kur” demeniz yeterlidir. Asistan aşağıdaki adımları izler; 
    - **Antigravity:** `~/.gemini/config/mcp_config.json` ya da `~/.gemini/antigravity/mcp_config.json`
      (hangisi varsa).
    - JSON dosyalarında önce dosyanın yedeğini al, sonra `mcpServers` nesnesine şu girdiyi ekle; var olan
-     sunuculara dokunma ve dosyanın geçerli JSON kaldığını doğrula:
+     sunuculara dokunma ve dosyanın geçerli JSON kaldığını doğrula. Aynı adla eski bir girdi varsa (ör. eskiden
+     kurulmuş `uvx uyap-udf-mcp`) kullanıcıya göster, yedekle ve değiştirmek için izin al:
      `"uyap-udf-mcp": {"command": "<uvx tam yolu>", "args": ["--from", "git+https://github.com/hasankaracaoglan/uyap-udf-mcp", "uyap-udf-mcp"]}`
-3. Ortamı önceden kurup denemek için şunu çalıştır; bağımlılıkları indirir (bir iki dakika sürebilir) ve
+3. Ortamı önceden kurup denemek için şunu çalıştır; bağımlılıkları indirir (boş bilgisayarda 2-3 dakika, komutun
+   zaman aşımı en az 5 dakika olsun) ve
    `ok` yazıp çıkar. Sunucunun kendisini terminalde çalıştırma, girdi bekleyip açık kalır:
    `<uvx tam yolu> --from git+https://github.com/hasankaracaoglan/uyap-udf-mcp python -c "print('ok')"`
 4. Kullanıcıya asistan uygulamasını tamamen kapatıp yeniden açmasını söyle.
