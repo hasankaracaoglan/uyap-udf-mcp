@@ -38,57 +38,51 @@ verip “bunu kur” demeniz yeterlidir. Asistan aşağıdaki adımları izler; 
 
 Bu sunucuyu dilekçe becerileriyle birlikte kuruyorsan [AvukatLab paketinin kurulum talimatını](https://github.com/hasankaracaoglan/avukatlab-yapay-zeka/blob/main/KURULUM.md) izle; üç sunucuyu ve becerileri birlikte kurar.
 
-1. Önce `uvx` zaten var mı bak: `command -v uvx` boş dönerse `~/.local/bin/uvx`, `/opt/homebrew/bin/uvx` ve
-   `/usr/local/bin/uvx` yollarını da dene. Yalnızca hiçbirinde yoksa `uv`'yi kur. macOS/Linux:
-   `curl -LsSf https://astral.sh/uv/install.sh | sh`. Windows:
-   `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`. Masaüstü uygulamaları
-   `~/.local/bin`'i PATH'te görmediği için ayarlarda daima bu tam yolu kullan.
-2. Sunucuyu kullanıcının kullandığı asistana ekle. Çalıştırılacak komut:
-   `<uvx tam yolu> --from git+https://github.com/hasankaracaoglan/uyap-udf-mcp uyap-udf-mcp`
-   - **Claude Code:** `claude mcp add uyap-udf-mcp -s user -- <uvx tam yolu> --from git+https://github.com/hasankaracaoglan/uyap-udf-mcp uyap-udf-mcp`
+Sunucu bilgisayara kalıcı olarak kurulur; açılırken internete, GitHub'a ya da git'e ihtiyaç duymaz.
+
+1. `uv`'nin tam yolunu bul: `command -v uv` boş dönerse `~/.local/bin/uv`, `/opt/homebrew/bin/uv` ve `/usr/local/bin/uv`
+   yollarını da dene. Yalnızca hiçbirinde yoksa kur. macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
+   Windows: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`.
+2. Sunucuyu kur (zaman aşımı en az 10 dakika olsun; "operation timed out" ile yarıda kalırsa bir kez daha çalıştır):
+   `UV_HTTP_TIMEOUT=180 <uv> tool install https://github.com/hasankaracaoglan/uyap-udf-mcp/archive/refs/heads/main.zip`
+3. Komutun tam yolu `<uv> tool dir --bin` klasöründeki `uyap-udf-mcp` dosyasıdır (çoğunlukla `~/.local/bin/uyap-udf-mcp`; ayarlara
+   açık yolu yaz). Masaüstü uygulamaları `~/.local/bin`'i PATH'te görmez. Bu yolu kullanıcının asistanına ekle:
+   - **Claude Code:** `claude mcp add uyap-udf-mcp -s user -- <tam yol>`
    - **Claude Desktop:** `~/Library/Application Support/Claude/claude_desktop_config.json`
      (Windows: `%APPDATA%\Claude\claude_desktop_config.json`). Dosya yoksa oluştur.
-   - **Antigravity:** `~/.gemini/config/mcp_config.json` ya da `~/.gemini/antigravity/mcp_config.json`
-     (hangisi varsa).
-   - JSON dosyalarında önce dosyanın yedeğini al, sonra `mcpServers` nesnesine şu girdiyi ekle; var olan
-     sunuculara dokunma ve dosyanın geçerli JSON kaldığını doğrula. Aynı adla eski bir girdi varsa (ör. eskiden
-     kurulmuş `uvx uyap-udf-mcp`) kullanıcıya göster, yedekle ve değiştirmek için izin al:
-     `"uyap-udf-mcp": {"command": "<uvx tam yolu>", "args": ["--from", "git+https://github.com/hasankaracaoglan/uyap-udf-mcp", "uyap-udf-mcp"]}`
-3. Ortamı önceden kurup denemek için şunu çalıştır; bağımlılıkları indirir (boş bilgisayarda 2-3 dakika, komutun
-   zaman aşımı en az 5 dakika olsun) ve
-   `ok` yazıp çıkar. Sunucunun kendisini terminalde çalıştırma, girdi bekleyip açık kalır:
-   `<uvx tam yolu> --from git+https://github.com/hasankaracaoglan/uyap-udf-mcp python -c "print('ok')"`
-4. Kullanıcıya asistan uygulamasını tamamen kapatıp yeniden açmasını söyle.
-5. PDF dönüştürme için Uyap Doküman Editörü'nün macOS'ta `/Applications` altında kurulu olması gerekir;
+   - **Antigravity:** `~/.gemini/config/mcp_config.json` (yeni sürüm) ya da `~/.gemini/antigravity/mcp_config.json`.
+   - JSON dosyalarında önce yedek al, sonra `mcpServers` nesnesine `"uyap-udf-mcp": {"command": "<tam yol>", "args": []}`
+     girdisini ekle. Var olan diğer sunuculara ve anahtarlara dokunma, dosyanın geçerli JSON kaldığını doğrula.
+     Aynı adla eski bir girdi varsa (ör. eskiden kurulmuş `uvx uyap-udf-mcp`) kullanıcıya göster, yedekle ve değiştirmek
+     için izin al. Sunucunun kendisini terminalde çalıştırma; girdi bekleyip açık kalır.
+4. PDF dönüştürme için Uyap Doküman Editörü'nün macOS'ta `/Applications` altında kurulu olması gerekir;
    ayrıca Java kurmak gerekmez. UDF üretme ve okuma için gerekmez.
+5. Kullanıcıya asistan uygulamasını tamamen kapatıp yeniden açmasını söyle.
 
-Sunucu her açılışta GitHub'daki son sürümü kullanır; güncelleme için ayrıca bir şey yapmak gerekmez.
+Güncelleme kendiliğinden olmaz. Güncellemek için: `UV_HTTP_TIMEOUT=180 <uv> tool install --reinstall --refresh https://github.com/hasankaracaoglan/uyap-udf-mcp/archive/refs/heads/main.zip`,
+ardından asistan uygulamasını yeniden başlat. Kaldırmak için: `<uv> tool uninstall uyap-udf-mcp` ve ayardaki girdiyi sil.
 
 ## Elle kurulum
 
-Python 3.10 veya üstü ve [uv](https://docs.astral.sh/uv/) gerekir. En kolay yol, MCP istemcisinin
-sunucuyu doğrudan GitHub'dan çalıştırmasıdır (Claude Desktop'ta `claude_desktop_config.json`):
+Python 3.10 veya üstü gerekir (uv gerekirse kendisi indirir). Önce [uv](https://docs.astral.sh/uv/)'yi kurun (Terminal'de `curl -LsSf https://astral.sh/uv/install.sh | sh`), sonra sunucuyu kalıcı olarak kurun:
 
-```json
-{
-  "mcpServers": {
-    "uyap-udf-mcp": {
-      "command": "uvx",
-      "args": ["--from", "git+https://github.com/hasankaracaoglan/uyap-udf-mcp", "uyap-udf-mcp"]
-    }
-  }
-}
+```bash
+~/.local/bin/uv tool install https://github.com/hasankaracaoglan/uyap-udf-mcp/archive/refs/heads/main.zip
 ```
 
-Claude Desktop `uvx`'i bulamazsa `command` alanına tam yolunu yazın (Terminal'de `which uvx`, çoğunlukla `/Users/<kullanıcı>/.local/bin/uvx`).
+MCP istemcisinde komut olarak kurulan dosyanın tam yolunu yazın (Terminal'de `echo $HOME` ile kendi yolunuzu öğrenin), örneğin Claude Desktop'ta `claude_desktop_config.json`:
 
-Kaynaktan kurmak için:
+```json
+{"mcpServers": {"uyap-udf-mcp": {"command": "/Users/KULLANICI/.local/bin/uyap-udf-mcp", "args": []}}}
+```
+
+Güncellemek için `~/.local/bin/uv tool install --reinstall --refresh https://github.com/hasankaracaoglan/uyap-udf-mcp/archive/refs/heads/main.zip` çalıştırıp istemciyi yeniden başlatın.
+
+Kaynaktan geliştirmek için:
 
 ```bash
 git clone https://github.com/hasankaracaoglan/uyap-udf-mcp.git
-cd uyap-udf-mcp
-python3 -m venv .venv
-.venv/bin/pip install -e .
+cd uyap-udf-mcp && python3 -m venv .venv && .venv/bin/pip install -e .
 ```
 
 Bu durumda komut `/tam/yol/uyap-udf-mcp/.venv/bin/uyap-udf-mcp` olur.
